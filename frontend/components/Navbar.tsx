@@ -1,6 +1,6 @@
+"use client";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
 
 const navItems = [
@@ -12,7 +12,6 @@ const navItems = [
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/75 backdrop-blur-xl">
@@ -84,7 +83,7 @@ export function Navbar() {
               ))}
 
               <div className="pt-2">
-                <Button variant="dark" className="w-full justify-center rounded-full py-2" onClick={() => { setOpen(false); router.push('/contact'); }}>
+                <Button href="/contact" variant="dark" className="w-full justify-center rounded-full py-2" onClick={() => { setOpen(false); }}>
                   Book a Project
                 </Button>
               </div>
