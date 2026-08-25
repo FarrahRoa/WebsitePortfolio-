@@ -44,20 +44,25 @@ export function Navbar() {
             aria-label="Toggle menu"
             aria-expanded={open}
             onClick={() => setOpen((s) => !s)}
-            className="flex items-center justify-center rounded p-2"
+            className="relative h-11 w-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded p-2"
           >
             <span className="sr-only">Menu</span>
-            <div className="flex h-5 w-6 flex-col items-center justify-between">
-              <span
-                className={`block h-[2px] w-full bg-white transform transition duration-300 ${open ? "rotate-45 translate-y-1.5" : ""}`}
-              />
-              <span
-                className={`block h-[2px] w-full bg-white transition-opacity duration-200 ${open ? "opacity-0" : "opacity-100"}`}
-              />
-              <span
-                className={`block h-[2px] w-full bg-white transform transition duration-300 ${open ? "-rotate-45 -translate-y-1.5" : ""}`}
-              />
-            </div>
+
+            {/*
+              Three absolutely-centered lines. When closed: top and bottom are offset using calc() so there are three stacked lines.
+              When open: top and bottom are both centered and rotated to form a perfectly symmetrical X using origin-center.
+            */}
+            <span
+              className={`absolute left-1/2 -translate-x-1/2 h-[2px] w-7 bg-white transition-all duration-300 origin-center ${open ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-[calc(50%-8px)]'}`}
+            />
+
+            <span
+              className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 h-[2px] w-7 bg-white transition-opacity duration-200 ${open ? 'opacity-0' : 'opacity-100'}`}
+            />
+
+            <span
+              className={`absolute left-1/2 -translate-x-1/2 h-[2px] w-7 bg-white transition-all duration-300 origin-center ${open ? 'top-1/2 -translate-y-1/2 -rotate-45' : 'top-[calc(50%+8px)]'}`}
+            />
           </button>
         </div>
       </div>
