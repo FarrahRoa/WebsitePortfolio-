@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
-import type { Database } from "../../backend/types/database.types";
+import type { Database } from "../backend/types/database.types";
 
 type ContactRow = Database["public"]["Tables"]["contact_info"]["Row"];
 

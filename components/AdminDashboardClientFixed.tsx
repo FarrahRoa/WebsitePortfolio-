@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabaseClient";
 import { uploadToCloudinary } from "@/lib/cloudinary";
-import type { Database } from "../../backend/types/database.types";
+import type { Database } from "../backend/types/database.types";
 
 import HomeContentEditor from "./HomeContentEditor";
 import AboutContentEditor from "./AboutContentEditor";
