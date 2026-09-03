@@ -38,7 +38,7 @@ export function PortfolioGrid({ projects, categories }: PortfolioGridProps) {
           </motion.div>
         ))}
       </div>
-      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3 items-start">
         {projects.map((project, index) => (
           <ProjectCard key={project.id} project={project} index={index} />
         ))}

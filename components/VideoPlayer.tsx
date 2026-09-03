@@ -55,25 +55,47 @@ export function VideoPlayer({ src, title, thumbnail }: VideoPlayerProps) {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [aspectRatio, setAspectRatio] = useState<string | null>(null);
-  const [metadataLoaded, setMetadataLoaded] = useState(false);
 
   function handleLoadedMetadata(e: React.SyntheticEvent<HTMLVideoElement>) {
     const v = e.currentTarget as HTMLVideoElement;
-    const w = v.videoWidth || 16;
-    const h = v.videoHeight || 9;
-    if (w && h) setAspectRatio(`${w} / ${h}`);
-    setMetadataLoaded(true);
+    const w = v.videoWidth || 0;
+    const h = v.videoHeight || 0;
+    const ratio = w && h ? `${w} / ${h}` : null;
+    // Development logging to verify dimensions
+    // eslint-disable-next-line no-console
+    console.log('Video loadedmetadata:', { src, width: w, height: h, ratio });
+
+    if (ratio) {
+      setAspectRatio(ratio);
+      // eslint-disable-next-line no-console
+      console.log('Video aspectRatio state set:', ratio);
+    }
   }
 
-  function handleMediaError() {
-    // prevent indefinite loading state; keep fallback ratio
-    setMetadataLoaded(true);
+  function handleMediaError(e?: any) {
+    // eslint-disable-next-line no-console
+    console.warn('Video metadata/load error for', src, e);
   }
 
-  const wrapperStyle: React.CSSProperties = { aspectRatio: aspectRatio ?? "16 / 9" };
+  // Apply aspect-ratio style only when measured; no fallback 16/9 to avoid forcing landscape
+  const wrapperStyle: React.CSSProperties | undefined = aspectRatio ? { aspectRatio } : undefined;
 
   return (
-    <div className="group relative overflow-hidden bg-black rounded-t-md" style={wrapperStyle}>
+    <div className="group relative w-full overflow-hidden bg-black rounded-t-md" style={wrapperStyle}>
+      {/* Native video is mounted immediately (preload metadata) so we can read intrinsic dimensions early */}
+      {!isExternalEmbed ? (
+        <video
+          ref={videoRef}
+          src={src}
+          title={title}
+          controls
+          preload="metadata"
+          className="block w-full h-auto object-contain bg-black"
+          onLoadedMetadata={handleLoadedMetadata}
+          onError={handleMediaError}
+        />
+      ) : null}
+
       <AnimatePresence mode="wait">
         {!isPlaying || isExternalEmbed ? (
           <motion.div
@@ -85,11 +107,10 @@ export function VideoPlayer({ src, title, thumbnail }: VideoPlayerProps) {
             className="absolute inset-0"
           >
             {isExternalEmbed ? (
-              // For YouTube/Vimeo keep their supported embed ratio (responsive wrapper)
               <iframe
                 title={title || "Video preview"}
                 src={embedUrl ?? ""}
-                className="h-full w-full border-0 bg-black"
+                className="h-full w-full border-0"
                 loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
@@ -98,50 +119,37 @@ export function VideoPlayer({ src, title, thumbnail }: VideoPlayerProps) {
             ) : (
               <>
                 {thumbnail ? (
-                  // Show thumbnail until metadata or play requested
                   <Image src={thumbnail} alt={title} fill className="object-contain transition duration-500 group-hover:scale-105" />
                 ) : (
-                  // Neutral black placeholder to prevent layout collapse
-                  <div className="w-full h-full bg-black" />
+                  <div className="flex h-full w-full items-center justify-center bg-black" />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
 
-                {!embedUrl ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Video unavailable</div>
-                ) : (
-                  <motion.button
-                    type="button"
-                    aria-label={`Play ${title}`}
-                    onClick={() => setIsPlaying(true)}
-                    animate={{ scale: [1, 1.08, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-white/10 text-xl text-white backdrop-blur-md"
-                  >
-                    ▶
-                  </motion.button>
-                )}
+                <motion.button
+                  type="button"
+                  aria-label={`Play ${title}`}
+                  onClick={() => {
+                    try {
+                      const v = videoRef.current;
+                      if (v) {
+                        const p = v.play();
+                        Promise.resolve(p).catch(() => {});
+                      }
+                    } catch (err) {
+                      // ignore
+                    }
+                    setIsPlaying(true);
+                  }}
+                  animate={{ scale: [1, 1.08, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-white/10 text-xl text-white backdrop-blur-md"
+                >
+                  ▶
+                </motion.button>
               </>
             )}
           </motion.div>
-        ) : (
-          <motion.video
-            key="video"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
-            ref={videoRef}
-            src={src}
-            title={title}
-            controls
-            autoPlay
-            muted
-            loop
-            onLoadedMetadata={handleLoadedMetadata}
-            onError={handleMediaError}
-            className="w-full h-full object-contain bg-black"
-          />
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   );
